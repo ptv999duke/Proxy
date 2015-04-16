@@ -11,7 +11,7 @@ class Proxy {
 		int server();
 		int myPort;
 		int myCacheSize;
-		void * newSock(void *);
+		static void * newSock(void *);
 };
 
 #endif

@@ -47,7 +47,7 @@ int Proxy::server()
 					perror("Accept error:");
 					exit(1);
 				}
-				if (pthread_create(&thread, NULL, newSock, (void *) &new_s)<0){
+				if (pthread_create(&thread, NULL, Proxy::newSock, (void *) &new_s)<0){
 					perror("Could not create thread\n");
 					return 1;
 				}
@@ -56,31 +56,31 @@ int Proxy::server()
 	return 0;
 }
 
-void * Proxy::newSock(void *new_socket) {
+ void * Proxy::newSock(void *new_socket) {
 
-	// int recv_len;
-	// char buffer[MAX_MSG_LENGTH],msg[MAX_MSG_LENGTH*3];
-	// int new_s = *(int *) new_socket;
+	int recv_len;
+	char buffer[MAX_MSG_LENGTH],msg[MAX_MSG_LENGTH*3];
+	int new_s = *(int *) new_socket;
 
-	// printf("Running a new thread now\n");
+	printf("Running a new thread now\n");
 
-	// while (recv_len = recv(new_s, buffer, MAX_MSG_LENGTH, 0)){
-	// 	if (recv_len<0){
-	// 		perror("Receive Error:");
-	// 		exit(1);
-	// 	}
-	// 	strncat(msg, buffer, MAX_MSG_LENGTH);
-	// 	strncat(msg, buffer, MAX_MSG_LENGTH);
-	// 	strncat(msg, buffer, MAX_MSG_LENGTH);
+	while (recv_len = recv(new_s, buffer, MAX_MSG_LENGTH, 0)){
+		if (recv_len<0){
+			perror("Receive Error:");
+			exit(1);
+		}
+		strncat(msg, buffer, MAX_MSG_LENGTH);
+		strncat(msg, buffer, MAX_MSG_LENGTH);
+		strncat(msg, buffer, MAX_MSG_LENGTH);
 
-	// 	if ((send(new_s, msg, MAX_MSG_LENGTH*3, 0)) < 0) {
-	// 		perror("Send error:");
-	// 		exit(1);
-	// 	}
-	// 	memset(msg,0,sizeof(msg));
-	// 	memset(buffer,0,sizeof(buffer));
-	// }
-	// close(new_s);
+		if ((send(new_s, msg, MAX_MSG_LENGTH*3, 0)) < 0) {
+			perror("Send error:");
+			exit(1);
+		}
+		memset(msg,0,sizeof(msg));
+		memset(buffer,0,sizeof(buffer));
+	}
+	close(new_s);
 	pthread_exit(NULL);
 
 }
