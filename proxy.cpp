@@ -58,29 +58,57 @@ int Proxy::server()
 
  void * Proxy::newSock(void *new_socket) {
 
+	int MAX_GET_REQUEST_LENGTH = 10000;
+	int MAX_RESPONSE_LENGTH = 10000;
+	char buffer[MAX_GET_REQUEST_LENGTH],msg[MAX_RESPONSE_LENGTH];
+	int clientSock = *(int *) new_socket;
 	int recv_len;
-	char buffer[MAX_MSG_LENGTH],msg[MAX_MSG_LENGTH*3];
-	int new_s = *(int *) new_socket;
 
 	printf("Running a new thread now\n");
+	int isPersistent = false;
+	int serverSock;
+	do {
+		if(recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0)){
+			if (recv_len > 0){
+				char* serverIP; //Extract from http header
 
-	while (recv_len = recv(new_s, buffer, MAX_MSG_LENGTH, 0)){
-		if (recv_len<0){
-			perror("Receive Error:");
-			exit(1);
-		}
-		strncat(msg, buffer, MAX_MSG_LENGTH);
-		strncat(msg, buffer, MAX_MSG_LENGTH);
-		strncat(msg, buffer, MAX_MSG_LENGTH);
+				//Check if it's GET and if it's in cache. If not :
 
-		if ((send(new_s, msg, MAX_MSG_LENGTH*3, 0)) < 0) {
-			perror("Send error:");
-			exit(1);
+				struct sockaddr_in server_addr;
+				char serverResponse[MAX_RESPONSE_LENGTH];
+				if ((serverSock = socket(AF_INET, SOCK_STREAM/* use tcp */, 0)) < 0) {
+					perror("Create server socket error:");
+					close(clientSock);
+					pthread_exit(NULL);
+					return NULL;
+				}
+
+				server_addr.sin_addr.s_addr = inet_addr(serverIP);
+				server_addr.sin_family = AF_INET;
+				server_addr.sin_port = htons(80);
+
+				if (connect(serverSock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+					close(clientSock);
+					pthread_exit(NULL);
+				}
+				if (send(serverSock, buffer, MAX_GET_REQUEST_LENGTH, 0) < 0) {
+					perror("Send to server error:");
+					close(clientSock);
+					close(serverSock);
+					pthread_exit(NULL);
+				}
+				recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
+
+				//store in cache
+			}
+
 		}
-		memset(msg,0,sizeof(msg));
-		memset(buffer,0,sizeof(buffer));
-	}
-	close(new_s);
+	} while(isPersistent);
+	
+	close(serverSock);
+	close(clientSock);
 	pthread_exit(NULL);
 
 }
+
+
