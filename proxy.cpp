@@ -65,39 +65,56 @@ int Proxy::server()
 	int recv_len;
 
 	printf("Running a new thread now\n");
-	int isPersistent = false;
+	int isPersistent = true;
 	int serverSock;
 	do {
-		if(recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0)){
+		while (recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0)){
+			cout<< "in while"<<endl;
+			cout << recv_len <<endl;
+			//cout << buffer <<endl;
 			if (recv_len > 0){
-				char* serverIP; //Extract from http header
+				if(strcmp(buffer, "GET") == 32 ){
+					char* serverIP="199.27.79.73"; //Extract from http header
+					//Check if it's GET and if it's in cache. If not :
+					struct sockaddr_in server_addr;
+					char serverResponse[MAX_RESPONSE_LENGTH];
+					if ((serverSock = socket(AF_INET, SOCK_STREAM/* use tcp */, 0)) < 0) {
+						perror("Create server socket error:");
+						close(clientSock);
+						pthread_exit(NULL);
+						return NULL;
+					}
+					cout <<"after serverSock"<<endl;
+					server_addr.sin_addr.s_addr = inet_addr(serverIP);
+					server_addr.sin_family = AF_INET;
+					server_addr.sin_port = htons(80);
 
-				//Check if it's GET and if it's in cache. If not :
+					cout<<"before connect"<<endl;
+					if (connect(serverSock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+						close(clientSock);
+						pthread_exit(NULL);
+					}
+					cout<<"before send"<<endl;
 
-				struct sockaddr_in server_addr;
-				char serverResponse[MAX_RESPONSE_LENGTH];
-				if ((serverSock = socket(AF_INET, SOCK_STREAM/* use tcp */, 0)) < 0) {
-					perror("Create server socket error:");
-					close(clientSock);
+					if (send(serverSock, buffer, MAX_GET_REQUEST_LENGTH, 0) < 0) {
+						perror("Send to server error:");
+						close(clientSock);
+						close(serverSock);
+						pthread_exit(NULL);
+					}
+					cout<<"before read"<<endl;
+
+					recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
+					cout<<"after read"<<endl;
+
+					cout << msg <<endl;
+					if ((send(clientSock, msg, recv_len, 0)) < 0) {
+					perror("Send error:");
 					pthread_exit(NULL);
-					return NULL;
-				}
+					}
 
-				server_addr.sin_addr.s_addr = inet_addr(serverIP);
-				server_addr.sin_family = AF_INET;
-				server_addr.sin_port = htons(80);
-
-				if (connect(serverSock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-					close(clientSock);
-					pthread_exit(NULL);
+					cout << "after send"<<endl;
 				}
-				if (send(serverSock, buffer, MAX_GET_REQUEST_LENGTH, 0) < 0) {
-					perror("Send to server error:");
-					close(clientSock);
-					close(serverSock);
-					pthread_exit(NULL);
-				}
-				recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
 
 				//store in cache
 			}
