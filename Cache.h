@@ -15,6 +15,7 @@ class Cache {
 		map<KeyNode, CacheNode> * cacheMap;
 		int myRemainingSize;
 		static const int MAX_AGE = 4000;
+		map<KeyNode, CacheNode>::iterator containsKey(KeyNode);
 	public:
 		Cache(int);
 		char* getFromCache(char*);
