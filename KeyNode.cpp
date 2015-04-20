@@ -13,7 +13,6 @@ bool KeyNode::operator==(const KeyNode& kn) const{
 }
 
 bool KeyNode::operator <(const KeyNode& kn) const{
-	cout << "less" << endl;
 	if(age != kn.age) {
 		return age < kn.age;
 	}
@@ -22,22 +21,3 @@ bool KeyNode::operator <(const KeyNode& kn) const{
 	}
 }
 
-bool KeyNode::operator <= (const KeyNode& kn) const{
-	cout << "less equal" << endl;
-	return age <= kn.age && key <= kn.key;
-}
-
-bool KeyNode::operator >= (const KeyNode& kn) const{
-	cout << "greater equal" << endl;
-	return age >= kn.age && key>= kn.key;
-}
-
-bool KeyNode::operator >(const KeyNode& kn) const{
-	cout << "greater" << endl;
-	if(age != kn.age) {
-		return age > kn.age;
-	}
-	else{
-		return key > kn.key;
-	}
-}

@@ -9,9 +9,6 @@ class KeyNode {
 		KeyNode(string, int);
 		bool operator==(const KeyNode&) const;
 		bool operator <(const KeyNode&) const;
-		bool operator <=(const KeyNode&) const;
-		bool operator >=(const KeyNode&) const;
-		bool operator >(const KeyNode&) const;
 		int age;
 		string key;
 };

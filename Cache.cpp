@@ -1,5 +1,7 @@
 #include "Cache.h"
 #include <cstring>
+#include <list>
+#include <vector>
 
 using namespace std;
 
@@ -9,28 +11,31 @@ Cache::Cache(int size) {
 }
 
 char* Cache::getFromCache(char* desiredKey) {
-	cout << "get" << endl;
 	string sKey(desiredKey);
 	KeyNode desiredKeyNode(sKey, MAX_AGE);
 	map<KeyNode, CacheNode>::iterator it;
 	char* output;
+	vector<pair<KeyNode, CacheNode> > v;
+	if(containsKey(desiredKeyNode) == cacheMap->end()) {
+		return '\0';
+	}
 	for(it = cacheMap->begin(); it != cacheMap->end(); it++) {
 		KeyNode kn = it->first;
 		CacheNode cn = it->second;
-		cout << "key " + kn.key << endl;
-		cout <<  kn.age << endl;
+		v.push_back(make_pair(kn, cn));
 		if(kn == desiredKeyNode) {
-			kn.age = MAX_AGE;
-			cn.age = MAX_AGE;
+			v.back().first.age = MAX_AGE;
 			output = new char[cn.size + 1];
 			strcpy(output, cn.data.c_str());
 		}
 		else {
-			kn.age = kn.age - 1;
-			cn.age = cn.age - 1;
-			cout << "asdf" << endl;
-			cout << kn.age << endl;
+			v.back().first.age = kn.age - 1;
 		}
+		cacheMap->erase(kn);
+	}
+	while(!v.empty()) {
+		cacheMap->insert(v.back());
+		v.pop_back();
 	}
 	return output;
 }
@@ -52,15 +57,19 @@ void Cache::addToCache(char* key, char* data, int size) {
 		return;
 	}
 	else{
+		//cout << "zxc" << endl;
 		map<KeyNode, CacheNode>::iterator it;
 		for(it = cacheMap->begin(); it != cacheMap->end();) {
+			cout << "removing key " + it->first.key << endl;
+			cout << "value " + it->second.data << endl;
+			cout << it->first.age << endl;
 			CacheNode cn = it->second;
 			myRemainingSize += cn.size;
 			cacheMap->erase(it);
 			if(myRemainingSize >= size) {
 				pair<KeyNode, CacheNode> p = make_pair(newKn, CacheNode(sdata,size, MAX_AGE));
 				cacheMap->insert(p);
-				myRemainingSize += size;
+				myRemainingSize -= size;
 				break;
 			}
 			else{
@@ -70,6 +79,7 @@ void Cache::addToCache(char* key, char* data, int size) {
 		}
 	}
 }
+
 map<KeyNode, CacheNode>::iterator Cache::containsKey(KeyNode desiredKeyNode) {
 	map<KeyNode, CacheNode>::iterator it;
 	for(it = cacheMap->begin(); it != cacheMap->end(); it++) {
