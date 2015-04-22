@@ -63,7 +63,7 @@ int Proxy::server()
  void * Proxy::newSock(void *new_socket) {
 
 	int MAX_GET_REQUEST_LENGTH = 10000;
-	int MAX_RESPONSE_LENGTH = 10000;
+	int MAX_RESPONSE_LENGTH = 4000000;
 	char buffer[MAX_GET_REQUEST_LENGTH],msg[MAX_RESPONSE_LENGTH];
 	int clientSock = *(int *) new_socket;
 	int recv_len;
@@ -71,9 +71,10 @@ int Proxy::server()
 	printf("Running a new thread now\n");
 	int isPersistent = true;
 	int serverSock;
-	do {
-		// cout<<"start while"<<endl;
-		while (recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0)){
+	// do 
+// {		// cout<<"start while"<<endl;
+		while (recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0))
+		{
 			cout<< "in while"<<endl;
 			cout << recv_len <<endl;
 			
@@ -160,9 +161,6 @@ int Proxy::server()
 
 		           freeaddrinfo(result);           /* No longer needed */
 
-
-
-
 					// cout <<"after serverSock"<<endl;
 					// server_addr.sin_addr.s_addr = inet_addr(serverIP);
 					// server_addr.sin_family = AF_INET;
@@ -175,7 +173,7 @@ int Proxy::server()
 					// }
 					cout<<"before send"<<endl;
 
-					if (send(serverSock, buffer, MAX_GET_REQUEST_LENGTH, 0) < 0) {
+					if (send(serverSock, buffer, recv_len, 0) < 0) {
 						perror("Send to server error:");
 						// close(clientSock);
 						close(serverSock);
@@ -183,25 +181,58 @@ int Proxy::server()
 					}
 					cout<<"before read"<<endl;
 
-					recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
-					cout<<"after read"<<endl;
+					int server_recv_len;
+					int recv_count=10000;
+					do{
+						memset(msg, 0, sizeof(msg));
+						server_recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
+						
+						if (strcmp(msg,"HTTP/") == 49){
+							string msgstr(msg);
 
-					cout << msg <<endl;
-					if ((send(clientSock, msg, recv_len, 0)) < 0) {
-					perror("Send error:");
-					pthread_exit(NULL);
+							int header_end = msgstr.find("\r\n\r\n",10);
+							header_end= header_end + 4;
+							int content_length_start = msgstr.find("Content-Length:");
+							content_length_start = content_length_start + 16;
+							int content_length_end = msgstr.find("\r\n",content_length_start);
+							string content_length_value = msgstr.substr(content_length_start,
+																content_length_end- content_length_start);
+							// int content_length = stoi(content_length_value,NULL,10);
+							int content_length;
+							istringstream (content_length_value) >> content_length;
+							// cout << content_length <<endl;
+							recv_count=content_length + header_end;
+						}
+						
+						recv_count = recv_count - server_recv_len;
+						cout << msg <<endl;
+						cout << "server_recv_len:"<<server_recv_len<<endl;
+						cout << "recv_count now is:" << recv_count <<endl;
+
+						if ((send(clientSock, msg, server_recv_len, 0)) < 0) {
+						perror("Send error:");
+						pthread_exit(NULL);
+						}
+
+					} while (recv_count>0);
+					
+					if (recv_count == 0){
+						cout<<"close the thread"<<endl;
+						close(serverSock);
+						close(clientSock);
+						pthread_exit(NULL);
 					}
 
-					cout << "after send"<<endl;
-
-		           
-				}
+				}// if request start with "GET"
 				cout << "still alive" <<endl;
 				//store in cache
-			}
+			} // if receive length from client > 0
 			cout << "still alive in while" <<endl;
-		}
-	} while(isPersistent);
+			memset(buffer, 0, sizeof(buffer));
+		} // while loop for receiving request from client.
+		isPersistent=false;
+		cout << "close the thread" <<endl;
+	// } while(isPersistent);
 	
 	close(serverSock);
 	close(clientSock);
