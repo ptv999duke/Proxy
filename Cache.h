@@ -7,6 +7,7 @@
 #include "CacheNode.h"
 #include "KeyNode.h"
 #include <string>
+#include <pthread.h>
 
 using namespace std; 
 
@@ -15,6 +16,8 @@ class Cache {
 		map<KeyNode, CacheNode> * cacheMap;
 		int myRemainingSize;
 		static const int MAX_AGE = 4000;
+		map<KeyNode, CacheNode>::iterator containsKey(KeyNode);
+		pthread_mutex_t mutex;
 	public:
 		Cache(int);
 		char* getFromCache(char*);
