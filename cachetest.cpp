@@ -19,6 +19,7 @@
 // 	char* fourthValue = "fourtfdfsdfdsd";
 // 	//set<KeyNode> s;
 // 	Cache * cache = new Cache(15);
+	
 // 	cache->addToCache(firstKey, firstValue, 9);
 // 	cache->addToCache(secondKey, secondValue, 3);
 // 	cache->addToCache(thirdKey, thirdValue, 3);
