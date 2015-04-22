@@ -31,8 +31,6 @@ int Cache::getFromCache(char* desiredKey, char * output) {
 			output = (char*) malloc(sizeof(char) * cn.size);
 			memcpy(output, cn.data, cn.size);
 			ret = cn.size;
-			// output = new char[cn.size + 1];
-			// strcpy(output, cn.data.c_str());
 		}
 		else {
 			v.back().first.age = kn.age - 1;
@@ -68,13 +66,8 @@ void Cache::addToCache(char* key, char* data, int size) {
 		return;
 	}
 	else{
-		//cout << "zxc" << endl;
 		map<KeyNode, CacheNode>::iterator it;
 		for(it = cacheMap->begin(); it != cacheMap->end();) {
-			cout << "removing key " + it->first.key << endl;
-			cout << "value ";
-			cout << it->second.data << endl;
-			cout << it->first.age << endl;
 			CacheNode cn = it->second;
 			myRemainingSize += cn.size;
 			cacheMap->erase(it);
