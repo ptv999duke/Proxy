@@ -53,10 +53,11 @@ int Proxy::server()
 					perror("Accept error:");
 					exit(1);
 				}
-				if (pthread_create(&thread, NULL, Proxy::newSock, (void *) &new_s)<0){
-					perror("Could not create thread\n");
-					return 1;
-				}
+		// if (pthread_create(&thread, NULL, Proxy::newSock, (void *) &new_s)<0){
+		// 			perror("Could not create thread\n");
+		// 			return 1;
+		// }
+		newSock( (void *) &new_s);
 
 			}
 	return 0;
@@ -204,13 +205,13 @@ int Proxy::server()
 							// int content_length = stoi(content_length_value,NULL,10);
 							int content_length;
 							istringstream (content_length_value) >> content_length;
-							// cout << content_length <<endl;
+							cout << "header size:" << header_end <<endl;
 							recv_count=content_length + header_end;
 							msg_total = (char *) malloc(recv_count);
 						}
 						
 						recv_count = recv_count - server_recv_len;
-						// cout << msg <<endl;
+						cout << msg <<endl;
 						cout << "server_recv_len:"<<server_recv_len<<endl;
 						cout << "recv_count now is:" << recv_count <<endl;
 						memcpy(msg_total+offset,msg,server_recv_len);
@@ -227,33 +228,37 @@ int Proxy::server()
 						pthread_exit(NULL);
 						}
 					
-					if (recv_count == 0){
-						cout<<"close the thread"<<endl;
-						close(serverSock);
-						close(clientSock);
-						pthread_exit(NULL);
-					}
+					// if (recv_count == 0){
+					// 	cout<<"close the thread"<<endl;
+					// 	close(serverSock);
+					// 	close(clientSock);
+					// 	// pthread_exit(NULL);
+					// 	return NULL;
+					// }
+					free(msg_total);
 
 				}// if request start with "GET"
-				else {
-					cout << "close the thread" <<endl;
-					close(serverSock);
-					close(clientSock);
-					pthread_exit(NULL);
-				}
+				// else {
+				// 	cout << "close the thread" <<endl;
+					// close(serverSock);
+					// close(clientSock);
+					// pthread_exit(NULL);
+					// return NULL;
+				// }
 				cout << "still alive" <<endl;
 				//store in cache
 			} // if receive length from client > 0
 			cout << "still alive in while" <<endl;
 			memset(buffer, 0, sizeof(buffer));
 		} // while loop for receiving request from client.
-		isPersistent=false;
-		cout << "close the thread" <<endl;
+		// isPersistent=false;
+		// cout << "close the thread" <<endl;
 	// } while(isPersistent);
-	
-	close(serverSock);
-	close(clientSock);
-	pthread_exit(NULL);
+	cout <<"close the thread" << endl;
+	// close(serverSock);
+	// close(clientSock);
+	// pthread_exit(NULL);
+	// return NULL;
 
 }
 
