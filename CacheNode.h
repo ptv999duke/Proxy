@@ -10,10 +10,9 @@ class CacheNode {
 	public:
 		bool operator==(const CacheNode&) const;
 		bool operator <(const CacheNode&) const;
-		CacheNode(string, int, int);
-		string data;
+		CacheNode(char*, int);
+		char* data;
 		int size;
-		int age;
 };
 
 #endif

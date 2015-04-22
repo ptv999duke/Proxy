@@ -2,7 +2,7 @@
 
 using namespace std;
 
-CacheNode::CacheNode(string cdata, int csize, int cage) {
+CacheNode::CacheNode(char* cdata, int csize) {
 	data = cdata;
 	size = csize;
 }
@@ -12,5 +12,5 @@ bool CacheNode::operator==(const CacheNode& cn) const {
 }
 
 bool CacheNode::operator <(const CacheNode& cn) const {
-	return age < cn.age;
+	return data < cn.data;
 }
