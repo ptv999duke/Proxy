@@ -211,7 +211,7 @@ int Proxy::server()
 						}
 						
 						recv_count = recv_count - server_recv_len;
-						cout << msg <<endl;
+						// cout << msg <<endl;
 						cout << "server_recv_len:"<<server_recv_len<<endl;
 						cout << "recv_count now is:" << recv_count <<endl;
 						memcpy(msg_total+offset,msg,server_recv_len);
