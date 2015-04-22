@@ -81,19 +81,19 @@ int Proxy::server()
 // {		// cout<<"start while"<<endl;
 		while (recv_len = recv(clientSock, buffer, MAX_GET_REQUEST_LENGTH, 0))
 		{
-			cout<< "in while"<<endl;
-			cout << recv_len <<endl;
+			// cout<< "in while"<<endl;
+			// cout << recv_len <<endl;
 			
 
 			if (recv_len > 0){
-				cout << buffer <<endl;
+				// cout << buffer <<endl;
 				string str(buffer);
 				size_t host_start= str.find("Host");
 				size_t url_end=str.find("\n",host_start+1);
 				string host=str.substr(host_start+6,url_end-host_start-7);
-				cout <<"host starts at:"<<host_start<<endl;
-				cout<<"url ends at:" << url_end << endl;
-				cout << host<<endl;
+				// cout <<"host starts at:"<<host_start<<endl;
+				// cout<<"url ends at:" << url_end << endl;
+				// cout << host<<endl;
 				string path;
 				int firstline_end = str.find("HTTP/1");
 				string firstline = str.substr(0,firstline_end);
@@ -139,8 +139,8 @@ int Proxy::server()
 	  				   string temp_str = strs.str();
 	 				   char* const port = (char*) temp_str.c_str();
 					   char* const ipAddress = (char*) host.c_str();
-					   cout << ipAddress << endl;
-					   cout << port <<endl;
+					   // cout << ipAddress << endl;
+					   // cout << port <<endl;
 			           s = getaddrinfo(ipAddress, "http", &hints, &result);
 
 			           if (s != 0) {
@@ -187,7 +187,7 @@ int Proxy::server()
 						// 	close(clientSock);
 						// 	pthread_exit(NULL);
 						// }
-						cout<<"before send"<<endl;
+						// cout<<"before send"<<endl;
 
 						if (send(serverSock, buffer, recv_len, 0) < 0) {
 							perror("Send to server error:");
@@ -195,7 +195,7 @@ int Proxy::server()
 							close(serverSock);
 							pthread_exit(NULL);
 						}
-						cout<<"before read"<<endl;
+						// cout<<"before read"<<endl;
 
 						int server_recv_len;
 						int recv_count=0;
@@ -218,22 +218,22 @@ int Proxy::server()
 								// int content_length = stoi(content_length_value,NULL,10);
 								int content_length;
 								istringstream (content_length_value) >> content_length;
-								cout << "header size:" << header_end <<endl;
+								// cout << "header size:" << header_end <<endl;
 								recv_count=content_length + header_end;
 								msg_total = (char *) malloc(recv_count);
 							}
 							
 							recv_count = recv_count - server_recv_len;
 							// cout << msg <<endl;
-							cout << "server_recv_len:"<<server_recv_len<<endl;
-							cout << "recv_count now is:" << recv_count <<endl;
+							// cout << "server_recv_len:"<<server_recv_len<<endl;
+							// cout << "recv_count now is:" << recv_count <<endl;
 							memcpy(msg_total+offset,msg,server_recv_len);
 							offset = offset + server_recv_len;
 
 						} while (recv_count>0);
-						cout << "Total received and the size is: "<<offset<<endl;
+						// cout << "Total received and the size is: "<<offset<<endl;
 
-						cout << msg_total << endl;
+						// cout << msg_total << endl;
 						c.addToCache(pathC, msg_total, offset);
 
 						if ((send(clientSock, msg_total, offset, 0)) < 0) {
@@ -260,10 +260,10 @@ int Proxy::server()
 					// pthread_exit(NULL);
 					// return NULL;
 				// }
-				cout << "still alive" <<endl;
+				// cout << "still alive" <<endl;
 				//store in cache
 			} // if receive length from client > 0
-			cout << "still alive in while" <<endl;
+			// cout << "still alive in while" <<endl;
 			memset(buffer, 0, sizeof(buffer));
 		} // while loop for receiving request from client.
 		// isPersistent=false;
