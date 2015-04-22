@@ -20,7 +20,7 @@ class Cache {
 		pthread_mutex_t mutex;
 	public:
 		Cache(int);
-		char* getFromCache(char*);
+		int getFromCache(char*, char*);
 		void addToCache(char*, char*, int);
 };
 

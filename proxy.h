@@ -1,7 +1,8 @@
+#include <iostream>
+#include "Cache.h"
+
 #ifndef PROXY_H
 #define PROXY_H
-
-#include <iostream>
 
 using namespace std; 
 
@@ -11,7 +12,7 @@ class Proxy {
 		int server();
 		int myPort;
 		int myCacheSize;
-		static void * newSock(void *);
+		static void * newSock(void *, Cache );
 };
 
 #endif

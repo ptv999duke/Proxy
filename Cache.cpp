@@ -11,16 +11,16 @@ Cache::Cache(int size) {
 	pthread_mutex_init(&mutex, NULL);
 }
 
-char* Cache::getFromCache(char* desiredKey) {
+int Cache::getFromCache(char* desiredKey, char * output) {
 	pthread_mutex_lock(&mutex);
 	string sKey(desiredKey);
 	KeyNode desiredKeyNode(sKey, MAX_AGE);
 	map<KeyNode, CacheNode>::iterator it;
-	char* output;
 	vector<pair<KeyNode, CacheNode> > v;
+	int ret;
 	if(containsKey(desiredKeyNode) == cacheMap->end()) {
 		pthread_mutex_unlock(&mutex);
-		return '\0';
+		return -1;
 	}
 	for(it = cacheMap->begin(); it != cacheMap->end(); it++) {
 		KeyNode kn = it->first;
@@ -30,6 +30,7 @@ char* Cache::getFromCache(char* desiredKey) {
 			v.back().first.age = MAX_AGE;
 			output = (char*) malloc(sizeof(char) * cn.size);
 			memcpy(output, cn.data, cn.size);
+			ret = cn.size;
 			// output = new char[cn.size + 1];
 			// strcpy(output, cn.data.c_str());
 		}
@@ -43,7 +44,7 @@ char* Cache::getFromCache(char* desiredKey) {
 		v.pop_back();
 	}
 	pthread_mutex_unlock(&mutex);
-	return output;
+	return ret;
 }
 
 void Cache::addToCache(char* key, char* data, int size) {
