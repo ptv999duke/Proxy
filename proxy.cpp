@@ -11,6 +11,7 @@
 #include <string>
 #include <netdb.h>
 #include <sstream>
+#include <signal.h>
 
 Proxy::Proxy(int port, int cache_size) {
 	myPort = port;
@@ -25,6 +26,7 @@ int Proxy::server()
 	pthread_t thread;
 	int recv_len;
 
+	signal(SIGPIPE,SIG_IGN);
 
 	/* build address data structure */
 	bzero((char *)&server_addr, sizeof(server_addr));
@@ -61,7 +63,7 @@ int Proxy::server()
 }
 
  void * Proxy::newSock(void *new_socket) {
-
+ 	signal(SIGPIPE,SIG_IGN);
 	int MAX_GET_REQUEST_LENGTH = 10000;
 	int MAX_RESPONSE_LENGTH = 4000000;
 	char buffer[MAX_GET_REQUEST_LENGTH],msg[MAX_RESPONSE_LENGTH];
@@ -182,7 +184,9 @@ int Proxy::server()
 					cout<<"before read"<<endl;
 
 					int server_recv_len;
-					int recv_count=10000;
+					int recv_count=0;
+					char * msg_total;
+					int offset=0;
 					do{
 						memset(msg, 0, sizeof(msg));
 						server_recv_len = read(serverSock, msg, MAX_RESPONSE_LENGTH);
@@ -202,19 +206,26 @@ int Proxy::server()
 							istringstream (content_length_value) >> content_length;
 							// cout << content_length <<endl;
 							recv_count=content_length + header_end;
+							msg_total = (char *) malloc(recv_count);
 						}
 						
 						recv_count = recv_count - server_recv_len;
-						cout << msg <<endl;
+						// cout << msg <<endl;
 						cout << "server_recv_len:"<<server_recv_len<<endl;
 						cout << "recv_count now is:" << recv_count <<endl;
+						memcpy(msg_total+offset,msg,server_recv_len);
+						offset = offset + server_recv_len;
 
-						if ((send(clientSock, msg, server_recv_len, 0)) < 0) {
+					} while (recv_count>0);
+					cout << "Total received and the size is: "<<offset<<endl;
+
+					cout << msg_total << endl;
+
+
+					if ((send(clientSock, msg_total, offset, 0)) < 0) {
 						perror("Send error:");
 						pthread_exit(NULL);
 						}
-
-					} while (recv_count>0);
 					
 					if (recv_count == 0){
 						cout<<"close the thread"<<endl;
@@ -224,6 +235,12 @@ int Proxy::server()
 					}
 
 				}// if request start with "GET"
+				else {
+					cout << "close the thread" <<endl;
+					close(serverSock);
+					close(clientSock);
+					pthread_exit(NULL);
+				}
 				cout << "still alive" <<endl;
 				//store in cache
 			} // if receive length from client > 0
